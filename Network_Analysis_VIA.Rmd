@@ -37,14 +37,7 @@ library(psych)
 library("writexl")
 ```
 
-Conclusiones del 15/06/2021
-- Glasso
-- Expected Influence
-- Predictability XGBOOST
-- Communities con Spinglass
-  - Bootstraping para calcular (x hacer)
-- Bridge Centrality (que todo mantenga la misma estética, en rosita)
-- Accuracy and stability con mi método (x hacer)
+
 
 
 Creating the dataset to work in R.
@@ -66,7 +59,7 @@ via_factors<-via_raw[,1:31]
 ```
 
 ```{r}
-#haciendo una tabla de estadísticos
+#making a table of statistics
 stats <- describe(via_factors)
 stats$vars <- row.names(stats)
 write_xlsx(stats,"stats.xlsx")
@@ -174,11 +167,11 @@ centralityPlot(GGM =  via_GGM, include = 'ExpectedInfluence', scale = 'relative'
 
 # Community detection
 
-M. Girvan y M. E. J. Newman en una de sus investigaciones, han destacado la estructura-propiedad de la comunidad utilizando redes sociales y redes biológicas. Según ellos, los nodos de la red están estrechamente conectados en grupos de punto dentro de las comunidades y débilmente conectados entre las comunidades.
+M. Girvan and M. E. J. Newman in one of their researches, have highlighted the structure-property of the community using social networks and biological networks. According to them, network nodes are tightly connected in point clusters within communities and weakly connected between communities.
 
-Por qué comunidades y no clustering (aprendizaje no supervisado)
-Se puede argumentar que la detección de comunidades es similar al clustering. El clustering es una técnica de aprendizaje automático en la que puntos de datos similares se agrupan en el mismo cluster basándose en sus atributos. Aunque el clustering puede aplicarse a las redes, es un campo más amplio del aprendizaje automático no supervisado que se ocupa de múltiples tipos de atributos. Por otro lado, la detección de comunidades está especialmente diseñada para el análisis de redes, que depende de un único tipo de atributo: edges. Además, los algoritmos de clustering tienden a separar los nodos periféricos únicos de las comunidades a las que deberían pertenecer. Sin embargo, tanto las técnicas de clustering como las de detección de comunidades pueden aplicarse a muchos problemas de análisis de redes y pueden plantear diferentes pros y contras en función del ámbito.
-Los métodos de detección de comunidades pueden clasificarse a grandes rasgos en dos tipos: métodos aglomerativos y métodos divisivos. En los métodos aglomerativos, las aristas se añaden una a una a un gráfico que sólo contiene nodos. Las aristas se añaden de la más fuerte a la más débil. Los métodos divisivos son lo contrario a los métodos aglomerativos. En ellos, las aristas se eliminan una a una de un gráfico completo.
+Why communities and not clustering (unsupervised learning)?
+It can be argued that community detection is similar to clustering. Clustering is a machine learning technique in which similar data points are grouped into the same cluster based on their attributes. Although clustering can be applied to networks, it is a broader field of unsupervised machine learning that deals with multiple types of attributes. On the other hand, community detection is especially designed for network analysis, which relies on a single type of attribute: edges. Moreover, clustering algorithms tend to separate single outlying nodes from the communities to which they should belong. However, both clustering and community detection techniques can be applied to many network analysis problems and may have different pros and cons depending on the domain.
+Community detection methods can be broadly classified into two types: agglomerative methods and divisive methods. In agglomerative methods, edges are added one by one to a graph containing only nodes. The edges are added from the strongest to the weakest. Divisive methods are the opposite of agglomerative methods. In them, edges are removed one by one from a complete graph.
 
 ## Igraph
 We can create a net from adjacency matrix
@@ -245,17 +238,17 @@ plot(via_GGM_plot)
 modularity(g,mem, weights = abs(E(g)$weight))
 ```
 
-# Probabilidad de que el nodo i esté en comunidad con el nodo j
-El algoritmo tiene varias partes:
-1. Coge una muestra de la base de datos
-2. Hace una red por correlaciones parciales Glasso
-3. Calcula comunidades (Spinglass)
-4. Extrae las comunidades
-5. Para cada nodo i calcula la probabilidad de estar con cada nodo i+1 ... i+n-1 (siendo n=24 el número de nodos totales en el caso del VIA). Notar que en cada iteración la matriz será dicotómica, de 0 y 1
-6. Se declara una matrix con los resultados para la primera iteración (es matriz binaria)
-7. Se suma con la matrix general, que comienza siendo una matriz de ceros y en cada iteración suma el nuevo resultado
-8. Una vez terminado todo el loop, se divide la matriz por el número de bootstrapping que se hagan
-9. Se grafican resultados
+# Probability that node i is in community with node j
+The algorithm has several parts:
+1. It takes a sample from the database.
+2. It makes a network by Glasso partial correlations.
+3. It calculates communities (Spinglass)
+4. Extract communities
+5. For each node i calculate the probability of being with each node i+1 ... i+n-1 (where n=24 is the number of total nodes in the case of VIA). Note that in each iteration the matrix will be dichotomous, of 0 and 1.
+6. A matrix is declared with the results for the first iteration (it is a binary matrix).
+7. Sum with the general matrix, which starts as a matrix of zeros and in each iteration adds the new result.
+8. Once the whole loop is finished, the matrix is divided by the number of bootstrapping to be done.
+9. Plot the results
 
 ```{r}
 iter = 100 #número de iteraciones totales del bootstrapping
@@ -318,7 +311,7 @@ centralityPlot(GGM =  megamatrix, include = 'all', scale = 'relative')
 
 
 # Bridge Centrality
-Tiene en cuenta las comunidades, por lo tanto, deberíamos de decidir qué comunidades elegimos y con qué método (ver después). Una vez decididas las comunidades, se puede meter como argumento en bridge centrality para estudiar la centralidad entre comunidades de los nodos con el paquete de Jones. Por ahora lo desarrollo según el cálculo por defecto de las comunidades que aparece en el paquete, que según su propio código "if communities not supplied, use spinglass default settings to detect" utiliza Spinglass.
+It takes communities into account, so we should decide which communities we choose and with which method (see below). Once the communities have been decided, it can be put as an argument in bridge centrality to study the centrality between communities of the nodes with the Jones package. For now I develop it according to the default calculation of the communities that appears in the package, which according to its own code "if communities not supplied, use spinglass default settings to detect" uses Spinglass.
 
 
 ```{r}
@@ -340,7 +333,7 @@ plot(bridge_centrality, include=c("Bridge Strength", "Bridge Expected Influence 
 ```
 
 
-Podemos seleccionar los que estén en el 80% del Exp-influence:
+We can select those that are in the 80% of Exp-influence:
 
 ```{r}
 BEI1 <- bridge_centrality$`Bridge Expected Influence (1-step)`
@@ -349,7 +342,7 @@ top_bridges <- names(BEI1[BEI1>quantile(BEI1, probs=0.80, na.rm=TRUE)])
 top_bridges
 ```
 
-Generamos un nuevo grupo en nuestro communities que sean los más bridge EI
+We generate a new group in our communities who are the most bridge EI
 
 
 ```{r}
@@ -379,7 +372,8 @@ qgraph(network, layout="spring",
 we would like to know: How accurate can the prediction be for a given node knowing all the others? Predictability is interesting for several reasons: 1. Even if a node has several edges but you can only predict 1% of its variance, then, we could come to the conclusion that we cannot assure that by influencing the nodes to which it is connected you can have good results.
 2. It tells us to what extent the different parts of the network are self-determined or determined by other factors that are not included in the network.
 
-Ahora se puede sacar la predictabilidad que tenemso de utilizar otros métodos de machine learning. Véase el jupyter notebook.
+Now you can get the predictability we have from using other machine learning methods. See the jupyter notebook. 
+If you want the code of the jupyternotebook please contact gustavo+analytics@nirakara.com
 
 ```{r}
 #### Gráfico 1. Práctica - Blink
@@ -426,10 +420,10 @@ dev.off();
 
 ```
 
-# Estabilidad
+# Stability
 
-Función para sacar la estabilidad de una red basado en el esquema de @costenbader_stability_2003:
-[Algoritmo de estabilidad](algoritmo_estabilidad.png)!
+Function to get the stability of a network based on the @costenbader_stability_2003 scheme:
+[stability_algorithm](stability_algorithm.png)!
 
 To study stability of the networks we followed the work of Costenbader and Valente (2003), we correlated 25 times the original Expected Influence with several subsamples of differents percentages from 1 to 0.5 (half of the sample). We calculated the mean and represent in the figure xxx, in a red area representing the confident interval (.95)
 
@@ -485,7 +479,6 @@ df_stability<-strengh_stability(via_factors[,8:31], low_ratio = 0.05)
 
  
 
-Lo siguiente es puta magia con dplyr, se puede ver el [siguiente tutorial](http://thenode.biologists.com/visualizing-data-one-more-time/education/)
 
 ```{r}
 row_names<-c("1", ".95", ".90", ".85", ".80", ".75", ".70", ".65", ".60", ".55", ".50",
